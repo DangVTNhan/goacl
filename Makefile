@@ -1,7 +1,8 @@
 # Variables
 PROTO_DIR := proto
-PB_DIR := pb
+API_DIR := api
 BUF := $(shell go env GOPATH)/bin/buf
+CMD_DIR := cmd/server
 
 # Default target
 .PHONY: all
@@ -9,22 +10,22 @@ all: generate
 
 # Generate Go code from all proto files using buf
 .PHONY: generate
-generate: $(PB_DIR)
+generate: $(API_DIR)
 	@echo "Generating Go code from proto files using buf..."
 	$(BUF) generate
 	@echo "Generation complete!"
 
-# Create pb directory if it doesn't exist
-$(PB_DIR):
-	mkdir -p $(PB_DIR)
+# Create api directory if it doesn't exist
+$(API_DIR):
+	mkdir -p $(API_DIR)
 
 # Clean generated files
 .PHONY: clean
 clean:
 	@echo "Cleaning generated files..."
-	rm -f $(PB_DIR)/*.pb.go
-	rm -rf $(PB_DIR)/*.pb.gw.go
-	rm -f $(PB_DIR)/*.swagger.json
+	rm -f $(API_DIR)/*.pb.go
+	rm -rf $(API_DIR)/*.pb.gw.go
+	rm -f $(API_DIR)/*.swagger.json
 	@echo "Clean complete!"
 
 # Install buf if needed
@@ -55,11 +56,29 @@ format:
 	$(BUF) format -w
 	@echo "Formatting complete!"
 
+# Build and run targets
+.PHONY: build
+build:
+	@echo "Building server..."
+	go build -o bin/server ./$(CMD_DIR)
+	@echo "Build complete!"
+
+.PHONY: run
+run:
+	@echo "Running server..."
+	go run ./$(CMD_DIR)
+
+.PHONY: dev
+dev: generate run
+
 # Help target
 .PHONY: help
 help:
 	@echo "Available targets:"
 	@echo "  generate      - Generate Go code from all proto files using buf"
+	@echo "  build         - Build the server binary"
+	@echo "  run           - Run the server"
+	@echo "  dev           - Generate and run (development workflow)"
 	@echo "  clean         - Remove generated .pb.go files"
 	@echo "  install-tools - Install buf"
 	@echo "  buf-deps      - Update buf dependencies"

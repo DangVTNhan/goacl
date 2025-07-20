@@ -3,7 +3,7 @@ package ping;
 
 import "google/api/annotations.proto";
 
-option go_package = "github.com/DangVTNhan/goacl/pb";
+option go_package = "github.com/DangVTNhan/goacl/api";
 
 service Ping {
   rpc Ping (PingRequest) returns (PingReply) {

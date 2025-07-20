@@ -1,0 +1,194 @@
+version: '3.8'
+
+services:
+  # Dgraph Zero - Cluster coordinator
+  dgraph-zero:
+    image: dgraph/dgraph:v24.0.2
+    container_name: goacl-dgraph-zero
+    command: dgraph zero --my=dgraph-zero:5080 --replicas=1 --idx=1
+    ports:
+      - "5080:5080"
+      - "6080:6080"
+    volumes:
+      - dgraph-zero-data:/dgraph
+    networks:
+      - goacl-network
+    environment:
+      - DGRAPH_ZERO_BADGER_TABLES=mmap
+      - DGRAPH_ZERO_BADGER_VLOG=mmap
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Dgraph Alpha - Data server
+  dgraph-alpha:
+    image: dgraph/dgraph:v24.0.2
+    container_name: goacl-dgraph-alpha
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080 --security=whitelist=0.0.0.0/0
+    ports:
+      - "8080:8080"  # HTTP
+      - "9080:9080"  # gRPC
+    volumes:
+      - dgraph-alpha-data:/dgraph
+    networks:
+      - goacl-network
+    environment:
+      - DGRAPH_ALPHA_BADGER_TABLES=mmap
+      - DGRAPH_ALPHA_BADGER_VLOG=mmap
+      - DGRAPH_ALPHA_CACHE_MB=2048
+      - DGRAPH_ALPHA_CACHE_PERCENTAGE=65
+    depends_on:
+      dgraph-zero:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # Redis Master
+  redis-master:
+    image: redis:8.0-alpine
+    container_name: goacl-redis-master
+    command: >
+      redis-server
+      --port 6379
+      --save 60 1000
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 60
+      --timeout 300
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-master-data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - goacl-network
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Redis Replica (for read scaling)
+  redis-replica:
+    image: redis:8.0-alpine
+    container_name: goacl-redis-replica
+    command: >
+      redis-server
+      --port 6380
+      --replicaof redis-master 6379
+      --replica-read-only yes
+      --save ""
+      --appendonly no
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6380:6380"
+    volumes:
+      - redis-replica-data:/data
+    networks:
+      - goacl-network
+    environment:
+      - REDIS_REPLICATION_MODE=replica
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # Redis Sentinel for high availability
+  redis-sentinel:
+    image: redis:8.0-alpine
+    container_name: goacl-redis-sentinel
+    command: >
+      redis-sentinel /usr/local/etc/redis/sentinel.conf
+      --sentinel
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./config/redis/sentinel.conf:/usr/local/etc/redis/sentinel.conf:ro
+      - redis-sentinel-data:/data
+    networks:
+      - goacl-network
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # Dgraph Ratel (Web UI for development)
+  dgraph-ratel:
+    image: dgraph/ratel:v21.12.0
+    container_name: goacl-dgraph-ratel
+    ports:
+      - "8000:8000"
+    networks:
+      - goacl-network
+    depends_on:
+      dgraph-alpha:
+        condition: service_healthy
+    environment:
+      - DGRAPH_URL=http://dgraph-alpha:8080
+    restart: unless-stopped
+
+  # Redis Commander (Web UI for development)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: goacl-redis-commander
+    ports:
+      - "8081:8081"
+    networks:
+      - goacl-network
+    environment:
+      - REDIS_HOSTS=master:redis-master:6379,replica:redis-replica:6380
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=admin
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  dgraph-zero-data:
+    driver: local
+  dgraph-alpha-data:
+    driver: local
+  redis-master-data:
+    driver: local
+  redis-replica-data:
+    driver: local
+  redis-sentinel-data:
+    driver: local
+
+networks:
+  goacl-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
