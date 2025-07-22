@@ -6,7 +6,7 @@
   },
   "tags": [
     {
-      "name": "Ping"
+      "name": "PingService"
     }
   ],
   "consumes": [
@@ -18,12 +18,12 @@
   "paths": {
     "/ping": {
       "get": {
-        "operationId": "Ping_Ping",
+        "operationId": "PingService_Ping",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pingPingReply"
+              "$ref": "#/definitions/v1PingResponse"
             }
           },
           "default": {
@@ -34,20 +34,12 @@
           }
         },
         "tags": [
-          "Ping"
+          "PingService"
         ]
       }
     }
   },
   "definitions": {
-    "pingPingReply": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -73,6 +65,14 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
         }
       }
     }

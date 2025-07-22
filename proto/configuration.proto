@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package goacl.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "types.proto";
+
+option go_package = "github.com/DangVTNhan/goacl/api";
+
+// ConfigurationService manages namespace configurations
+service ConfigurationService {
+  // Create or update a namespace configuration
+  rpc WriteNamespace(WriteNamespaceRequest) returns (WriteNamespaceResponse) {
+    option (google.api.http) = {
+      post: "/v1/namespaces"
+      body: "*"
+    };
+  }
+
+  // Get a namespace configuration
+  rpc ReadNamespace(ReadNamespaceRequest) returns (ReadNamespaceResponse) {
+    option (google.api.http) = {
+      get: "/v1/namespaces/{namespace}"
+    };
+  }
+
+  // List all namespace configurations
+  rpc ListNamespaces(ListNamespacesRequest) returns (ListNamespacesResponse) {
+    option (google.api.http) = {
+      get: "/v1/namespaces"
+    };
+  }
+
+  // Delete a namespace configuration
+  rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse) {
+    option (google.api.http) = {
+      delete: "/v1/namespaces/{namespace}"
+    };
+  }
+
+  // Validate a namespace configuration
+  rpc ValidateNamespace(ValidateNamespaceRequest) returns (ValidateNamespaceResponse) {
+    option (google.api.http) = {
+      post: "/v1/namespaces/{namespace}/validate"
+      body: "*"
+    };
+  }
+}
+
+// WriteNamespaceRequest contains the namespace configuration to write
+message WriteNamespaceRequest {
+  // The namespace configuration to write
+  NamespaceConfig config = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+
+  // Whether to allow updates to existing namespaces
+  bool allow_update = 3;
+}
+
+// WriteNamespaceResponse confirms the write operation
+message WriteNamespaceResponse {
+  // Consistency token for subsequent operations
+  string consistency_token = 1;
+
+  // When the namespace was written
+  google.protobuf.Timestamp written_at = 2;
+
+  // The written namespace configuration
+  NamespaceConfig config = 3;
+}
+
+// ReadNamespaceRequest specifies which namespace to read
+message ReadNamespaceRequest {
+  // The namespace name to read
+  string namespace = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+}
+
+// ReadNamespaceResponse contains the namespace configuration
+message ReadNamespaceResponse {
+  // The namespace configuration
+  NamespaceConfig config = 1;
+
+  // Consistency token
+  string consistency_token = 2;
+}
+
+// ListNamespacesRequest specifies filters for listing namespaces
+message ListNamespacesRequest {
+  // Optional consistency token
+  string consistency_token = 1;
+
+  // Pagination token
+  string page_token = 2;
+
+  // Maximum number of namespaces to return
+  int32 page_size = 3;
+}
+
+// ListNamespacesResponse contains the list of namespaces
+message ListNamespacesResponse {
+  // The namespace configurations
+  repeated NamespaceConfig configs = 1;
+
+  // Token for next page of results
+  string next_page_token = 2;
+
+  // Consistency token
+  string consistency_token = 3;
+}
+
+// DeleteNamespaceRequest specifies which namespace to delete
+message DeleteNamespaceRequest {
+  // The namespace name to delete
+  string namespace = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+
+  // Whether to force delete even if tuples exist
+  bool force = 3;
+}
+
+// DeleteNamespaceResponse confirms the delete operation
+message DeleteNamespaceResponse {
+  // Consistency token for subsequent operations
+  string consistency_token = 1;
+
+  // When the namespace was deleted
+  google.protobuf.Timestamp deleted_at = 2;
+}
+
+// ValidateNamespaceRequest contains a namespace configuration to validate
+message ValidateNamespaceRequest {
+  // The namespace name being validated
+  string namespace = 1;
+
+  // The namespace configuration to validate
+  NamespaceConfig config = 2;
+}
+
+// ValidateNamespaceResponse contains validation results
+message ValidateNamespaceResponse {
+  // Whether the configuration is valid
+  bool valid = 1;
+
+  // Validation errors if any
+  repeated ValidationError errors = 2;
+
+  // Validation warnings if any
+  repeated ValidationWarning warnings = 3;
+}
+
+// ValidationError represents a configuration validation error
+message ValidationError {
+  // The field that has an error
+  string field = 1;
+
+  // The error message
+  string message = 2;
+
+  // The error code
+  string code = 3;
+}
+
+// ValidationWarning represents a configuration validation warning
+message ValidationWarning {
+  // The field that has a warning
+  string field = 1;
+
+  // The warning message
+  string message = 2;
+
+  // The warning code
+  string code = 3;
+}

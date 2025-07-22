@@ -35,7 +35,7 @@ var (
 	_ = metadata.Join
 )
 
-func request_Ping_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client PingClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PingService_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client PingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq PingRequest
 		metadata runtime.ServerMetadata
@@ -47,7 +47,7 @@ func request_Ping_Ping_0(ctx context.Context, marshaler runtime.Marshaler, clien
 	return msg, metadata, err
 }
 
-func local_request_Ping_Ping_0(ctx context.Context, marshaler runtime.Marshaler, server PingServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_PingService_Ping_0(ctx context.Context, marshaler runtime.Marshaler, server PingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq PingRequest
 		metadata runtime.ServerMetadata
@@ -56,39 +56,39 @@ func local_request_Ping_Ping_0(ctx context.Context, marshaler runtime.Marshaler,
 	return msg, metadata, err
 }
 
-// RegisterPingHandlerServer registers the http handlers for service Ping to "mux".
-// UnaryRPC     :call PingServer directly.
+// RegisterPingServiceHandlerServer registers the http handlers for service PingService to "mux".
+// UnaryRPC     :call PingServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPingHandlerFromEndpoint instead.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPingServiceHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
-func RegisterPingHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PingServer) error {
-	mux.Handle(http.MethodGet, pattern_Ping_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func RegisterPingServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PingServiceServer) error {
+	mux.Handle(http.MethodGet, pattern_PingService_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ping.Ping/Ping", runtime.WithHTTPPathPattern("/ping"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/goacl.v1.PingService/Ping", runtime.WithHTTPPathPattern("/ping"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Ping_Ping_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_PingService_Ping_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_Ping_Ping_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PingService_Ping_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
 }
 
-// RegisterPingHandlerFromEndpoint is same as RegisterPingHandler but
+// RegisterPingServiceHandlerFromEndpoint is same as RegisterPingServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterPingHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterPingServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
@@ -107,45 +107,45 @@ func RegisterPingHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux,
 			}
 		}()
 	}()
-	return RegisterPingHandler(ctx, mux, conn)
+	return RegisterPingServiceHandler(ctx, mux, conn)
 }
 
-// RegisterPingHandler registers the http handlers for service Ping to "mux".
+// RegisterPingServiceHandler registers the http handlers for service PingService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterPingHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterPingHandlerClient(ctx, mux, NewPingClient(conn))
+func RegisterPingServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterPingServiceHandlerClient(ctx, mux, NewPingServiceClient(conn))
 }
 
-// RegisterPingHandlerClient registers the http handlers for service Ping
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "PingClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "PingClient"
+// RegisterPingServiceHandlerClient registers the http handlers for service PingService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "PingServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "PingServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "PingClient" to call the correct interceptors. This client ignores the HTTP middlewares.
-func RegisterPingHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PingClient) error {
-	mux.Handle(http.MethodGet, pattern_Ping_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+// "PingServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+func RegisterPingServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PingServiceClient) error {
+	mux.Handle(http.MethodGet, pattern_PingService_Ping_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ping.Ping/Ping", runtime.WithHTTPPathPattern("/ping"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/goacl.v1.PingService/Ping", runtime.WithHTTPPathPattern("/ping"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Ping_Ping_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_PingService_Ping_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_Ping_Ping_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_PingService_Ping_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	return nil
 }
 
 var (
-	pattern_Ping_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"ping"}, ""))
+	pattern_PingService_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"ping"}, ""))
 )
 
 var (
-	forward_Ping_Ping_0 = runtime.ForwardResponseMessage
+	forward_PingService_Ping_0 = runtime.ForwardResponseMessage
 )

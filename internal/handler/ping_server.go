@@ -6,13 +6,13 @@ import (
 )
 
 type PingServer struct {
-	api.UnimplementedPingServer
+	api.UnimplementedPingServiceServer
 }
 
 func NewPingServer() *PingServer {
 	return &PingServer{}
 }
 
-func (s *PingServer) Ping(_ context.Context, _ *api.PingRequest) (*api.PingReply, error) {
-	return &api.PingReply{Message: "Pong"}, nil
+func (s *PingServer) Ping(_ context.Context, _ *api.PingRequest) (*api.PingResponse, error) {
+	return &api.PingResponse{Message: "Pong"}, nil
 }

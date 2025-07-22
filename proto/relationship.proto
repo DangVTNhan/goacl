@@ -1,0 +1,234 @@
+syntax = "proto3";
+
+package goacl.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "types.proto";
+
+option go_package = "github.com/DangVTNhan/goacl/api";
+
+// RelationshipService manages relation tuples
+service RelationshipService {
+  // Write one or more relation tuples
+  rpc WriteRelation(WriteRelationRequest) returns (WriteRelationResponse) {
+    option (google.api.http) = {
+      post: "/v1/relations"
+      body: "*"
+    };
+  }
+
+  // Delete one or more relation tuples
+  rpc DeleteRelation(DeleteRelationRequest) returns (DeleteRelationResponse) {
+    option (google.api.http) = {
+      post: "/v1/relations/delete"
+      body: "*"
+    };
+  }
+
+  // Read relation tuples based on filters
+  rpc ReadRelations(ReadRelationsRequest) returns (ReadRelationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/relations"
+    };
+  }
+
+  // Watch for changes to relation tuples (streaming)
+  rpc WatchRelations(WatchRelationsRequest) returns (stream WatchRelationsResponse);
+
+  // Batch write multiple relation operations atomically
+  rpc BatchWrite(BatchWriteRequest) returns (BatchWriteResponse) {
+    option (google.api.http) = {
+      post: "/v1/relations/batch"
+      body: "*"
+    };
+  }
+}
+
+// WriteRelationRequest contains tuples to write
+message WriteRelationRequest {
+  // The relation tuples to write
+  repeated RelationTuple tuples = 1;
+
+  // Optional consistency token for causally consistent writes
+  string consistency_token = 2;
+
+  // Optional preconditions that must be met
+  repeated Precondition preconditions = 3;
+}
+
+// WriteRelationResponse confirms the write operation
+message WriteRelationResponse {
+  // Consistency token for subsequent operations
+  string consistency_token = 1;
+
+  // When the tuples were written
+  google.protobuf.Timestamp written_at = 2;
+
+  // Number of tuples actually written
+  int32 tuples_written = 3;
+}
+
+// DeleteRelationRequest specifies tuples to delete
+message DeleteRelationRequest {
+  // Filter for tuples to delete
+  RelationFilter filter = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+
+  // Optional preconditions that must be met
+  repeated Precondition preconditions = 3;
+
+  // If true, delete all matching tuples; if false, fail if multiple matches
+  bool allow_multiple = 4;
+}
+
+// DeleteRelationResponse confirms the delete operation
+message DeleteRelationResponse {
+  // Consistency token for subsequent operations
+  string consistency_token = 1;
+
+  // When the tuples were deleted
+  google.protobuf.Timestamp deleted_at = 2;
+
+  // Number of tuples actually deleted
+  int32 tuples_deleted = 3;
+}
+
+// ReadRelationsRequest specifies what tuples to read
+message ReadRelationsRequest {
+  // Filter for tuples to read
+  RelationFilter filter = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+
+  // Pagination token
+  string page_token = 3;
+
+  // Maximum number of tuples to return
+  int32 page_size = 4;
+}
+
+// ReadRelationsResponse contains the matching tuples
+message ReadRelationsResponse {
+  // The matching relation tuples
+  repeated RelationTuple tuples = 1;
+
+  // Token for next page of results
+  string next_page_token = 2;
+
+  // Consistency token
+  string consistency_token = 3;
+}
+
+// WatchRelationsRequest specifies what changes to watch
+message WatchRelationsRequest {
+  // Filter for tuples to watch
+  RelationFilter filter = 1;
+
+  // Optional consistency token to start watching from
+  string consistency_token = 2;
+}
+
+// WatchRelationsResponse contains change notifications
+message WatchRelationsResponse {
+  // The type of change that occurred
+  ChangeType change_type = 1;
+
+  // The tuple that was changed
+  RelationTuple tuple = 2;
+
+  // Consistency token for this change
+  string consistency_token = 3;
+
+  // When the change occurred
+  google.protobuf.Timestamp changed_at = 4;
+}
+
+// BatchWriteRequest contains multiple write operations
+message BatchWriteRequest {
+  // List of write operations to perform atomically
+  repeated WriteOperation operations = 1;
+
+  // Optional consistency token
+  string consistency_token = 2;
+}
+
+// BatchWriteResponse confirms the batch operation
+message BatchWriteResponse {
+  // Consistency token for subsequent operations
+  string consistency_token = 1;
+
+  // When the batch was written
+  google.protobuf.Timestamp written_at = 2;
+
+  // Results for each operation
+  repeated WriteOperationResult results = 3;
+}
+
+// WriteOperation represents a single write or delete operation
+message WriteOperation {
+  oneof operation {
+    // Write operation
+    WriteRelationRequest write = 1;
+
+    // Delete operation
+    DeleteRelationRequest delete = 2;
+  }
+}
+
+// WriteOperationResult contains the result of a single operation
+message WriteOperationResult {
+  // Whether the operation succeeded
+  bool success = 1;
+
+  // Error message if the operation failed
+  string error = 2;
+
+  // Number of tuples affected
+  int32 tuples_affected = 3;
+}
+
+// RelationFilter specifies criteria for filtering relation tuples
+message RelationFilter {
+  // Optional namespace filter
+  string namespace = 1;
+
+  // Optional object ID filter
+  string object_id = 2;
+
+  // Optional relation filter
+  string relation = 3;
+
+  // Optional user ID filter
+  string user_id = 4;
+
+  // Optional userset filter
+  string userset = 5;
+}
+
+// Precondition specifies a condition that must be met for an operation
+message Precondition {
+  // The type of precondition
+  PreconditionType type = 1;
+
+  // The tuple that must (not) exist
+  RelationTuple tuple = 2;
+}
+
+// PreconditionType specifies the type of precondition
+enum PreconditionType {
+  PRECONDITION_TYPE_UNSPECIFIED = 0;
+  PRECONDITION_TYPE_MUST_EXIST = 1;
+  PRECONDITION_TYPE_MUST_NOT_EXIST = 2;
+}
+
+// ChangeType specifies the type of change in a watch response
+enum ChangeType {
+  CHANGE_TYPE_UNSPECIFIED = 0;
+  CHANGE_TYPE_CREATED = 1;
+  CHANGE_TYPE_DELETED = 2;
+  CHANGE_TYPE_UPDATED = 3;
+}

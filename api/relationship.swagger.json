@@ -1,0 +1,537 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "relationship.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "RelationshipService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/relations": {
+      "get": {
+        "summary": "Read relation tuples based on filters",
+        "operationId": "RelationshipService_ReadRelations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReadRelationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filter.namespace",
+            "description": "Optional namespace filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filter.objectId",
+            "description": "Optional object ID filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filter.relation",
+            "description": "Optional relation filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filter.userId",
+            "description": "Optional user ID filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filter.userset",
+            "description": "Optional userset filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "consistencyToken",
+            "description": "Optional consistency token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageToken",
+            "description": "Pagination token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Maximum number of tuples to return",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "RelationshipService"
+        ]
+      },
+      "post": {
+        "summary": "Write one or more relation tuples",
+        "operationId": "RelationshipService_WriteRelation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WriteRelationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1WriteRelationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RelationshipService"
+        ]
+      }
+    },
+    "/v1/relations/batch": {
+      "post": {
+        "summary": "Batch write multiple relation operations atomically",
+        "operationId": "RelationshipService_BatchWrite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1BatchWriteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1BatchWriteRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RelationshipService"
+        ]
+      }
+    },
+    "/v1/relations/delete": {
+      "post": {
+        "summary": "Delete one or more relation tuples",
+        "operationId": "RelationshipService_DeleteRelation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRelationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRelationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RelationshipService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1BatchWriteRequest": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WriteOperation"
+          },
+          "title": "List of write operations to perform atomically"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Optional consistency token"
+        }
+      },
+      "title": "BatchWriteRequest contains multiple write operations"
+    },
+    "v1BatchWriteResponse": {
+      "type": "object",
+      "properties": {
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for subsequent operations"
+        },
+        "writtenAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the batch was written"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WriteOperationResult"
+          },
+          "title": "Results for each operation"
+        }
+      },
+      "title": "BatchWriteResponse confirms the batch operation"
+    },
+    "v1ChangeType": {
+      "type": "string",
+      "enum": [
+        "CHANGE_TYPE_UNSPECIFIED",
+        "CHANGE_TYPE_CREATED",
+        "CHANGE_TYPE_DELETED",
+        "CHANGE_TYPE_UPDATED"
+      ],
+      "default": "CHANGE_TYPE_UNSPECIFIED",
+      "title": "ChangeType specifies the type of change in a watch response"
+    },
+    "v1DeleteRelationRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/v1RelationFilter",
+          "title": "Filter for tuples to delete"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Optional consistency token"
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Precondition"
+          },
+          "title": "Optional preconditions that must be met"
+        },
+        "allowMultiple": {
+          "type": "boolean",
+          "title": "If true, delete all matching tuples; if false, fail if multiple matches"
+        }
+      },
+      "title": "DeleteRelationRequest specifies tuples to delete"
+    },
+    "v1DeleteRelationResponse": {
+      "type": "object",
+      "properties": {
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for subsequent operations"
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the tuples were deleted"
+        },
+        "tuplesDeleted": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Number of tuples actually deleted"
+        }
+      },
+      "title": "DeleteRelationResponse confirms the delete operation"
+    },
+    "v1Precondition": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1PreconditionType",
+          "title": "The type of precondition"
+        },
+        "tuple": {
+          "$ref": "#/definitions/v1RelationTuple",
+          "title": "The tuple that must (not) exist"
+        }
+      },
+      "title": "Precondition specifies a condition that must be met for an operation"
+    },
+    "v1PreconditionType": {
+      "type": "string",
+      "enum": [
+        "PRECONDITION_TYPE_UNSPECIFIED",
+        "PRECONDITION_TYPE_MUST_EXIST",
+        "PRECONDITION_TYPE_MUST_NOT_EXIST"
+      ],
+      "default": "PRECONDITION_TYPE_UNSPECIFIED",
+      "title": "PreconditionType specifies the type of precondition"
+    },
+    "v1ReadRelationsResponse": {
+      "type": "object",
+      "properties": {
+        "tuples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RelationTuple"
+          },
+          "title": "The matching relation tuples"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Token for next page of results"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token"
+        }
+      },
+      "title": "ReadRelationsResponse contains the matching tuples"
+    },
+    "v1RelationFilter": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "title": "Optional namespace filter"
+        },
+        "objectId": {
+          "type": "string",
+          "title": "Optional object ID filter"
+        },
+        "relation": {
+          "type": "string",
+          "title": "Optional relation filter"
+        },
+        "userId": {
+          "type": "string",
+          "title": "Optional user ID filter"
+        },
+        "userset": {
+          "type": "string",
+          "title": "Optional userset filter"
+        }
+      },
+      "title": "RelationFilter specifies criteria for filtering relation tuples"
+    },
+    "v1RelationTuple": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "title": "The namespace that defines the schema for this tuple"
+        },
+        "objectId": {
+          "type": "string",
+          "title": "The ID of the object in the relationship"
+        },
+        "relation": {
+          "type": "string",
+          "title": "The relation name (e.g., \"viewer\", \"editor\", \"owner\")"
+        },
+        "userId": {
+          "type": "string",
+          "title": "The user ID in the relationship"
+        },
+        "userset": {
+          "type": "string",
+          "title": "Optional userset for indirect relationships (e.g., \"group:eng#member\")"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When this tuple was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When this tuple was last updated"
+        }
+      },
+      "title": "RelationTuple represents a relationship between a user and an object\nFollowing Zanzibar's tuple format: \u003cobject\u003e#\u003crelation\u003e@\u003cuser\u003e"
+    },
+    "v1WatchRelationsResponse": {
+      "type": "object",
+      "properties": {
+        "changeType": {
+          "$ref": "#/definitions/v1ChangeType",
+          "title": "The type of change that occurred"
+        },
+        "tuple": {
+          "$ref": "#/definitions/v1RelationTuple",
+          "title": "The tuple that was changed"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for this change"
+        },
+        "changedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the change occurred"
+        }
+      },
+      "title": "WatchRelationsResponse contains change notifications"
+    },
+    "v1WriteOperation": {
+      "type": "object",
+      "properties": {
+        "write": {
+          "$ref": "#/definitions/v1WriteRelationRequest",
+          "title": "Write operation"
+        },
+        "delete": {
+          "$ref": "#/definitions/v1DeleteRelationRequest",
+          "title": "Delete operation"
+        }
+      },
+      "title": "WriteOperation represents a single write or delete operation"
+    },
+    "v1WriteOperationResult": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "title": "Whether the operation succeeded"
+        },
+        "error": {
+          "type": "string",
+          "title": "Error message if the operation failed"
+        },
+        "tuplesAffected": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Number of tuples affected"
+        }
+      },
+      "title": "WriteOperationResult contains the result of a single operation"
+    },
+    "v1WriteRelationRequest": {
+      "type": "object",
+      "properties": {
+        "tuples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RelationTuple"
+          },
+          "title": "The relation tuples to write"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Optional consistency token for causally consistent writes"
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Precondition"
+          },
+          "title": "Optional preconditions that must be met"
+        }
+      },
+      "title": "WriteRelationRequest contains tuples to write"
+    },
+    "v1WriteRelationResponse": {
+      "type": "object",
+      "properties": {
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for subsequent operations"
+        },
+        "writtenAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the tuples were written"
+        },
+        "tuplesWritten": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Number of tuples actually written"
+        }
+      },
+      "title": "WriteRelationResponse confirms the write operation"
+    }
+  }
+}

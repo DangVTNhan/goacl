@@ -1,0 +1,457 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "configuration.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ConfigurationService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/namespaces": {
+      "get": {
+        "summary": "List all namespace configurations",
+        "operationId": "ConfigurationService_ListNamespaces",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListNamespacesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "consistencyToken",
+            "description": "Optional consistency token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageToken",
+            "description": "Pagination token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Maximum number of namespaces to return",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "ConfigurationService"
+        ]
+      },
+      "post": {
+        "summary": "Create or update a namespace configuration",
+        "operationId": "ConfigurationService_WriteNamespace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WriteNamespaceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1WriteNamespaceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ConfigurationService"
+        ]
+      }
+    },
+    "/v1/namespaces/{namespace}": {
+      "get": {
+        "summary": "Get a namespace configuration",
+        "operationId": "ConfigurationService_ReadNamespace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReadNamespaceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "description": "The namespace name to read",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consistencyToken",
+            "description": "Optional consistency token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ConfigurationService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a namespace configuration",
+        "operationId": "ConfigurationService_DeleteNamespace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteNamespaceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "description": "The namespace name to delete",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "consistencyToken",
+            "description": "Optional consistency token",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "force",
+            "description": "Whether to force delete even if tuples exist",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "ConfigurationService"
+        ]
+      }
+    },
+    "/v1/namespaces/{namespace}/validate": {
+      "post": {
+        "summary": "Validate a namespace configuration",
+        "operationId": "ConfigurationService_ValidateNamespace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ValidateNamespaceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "description": "The namespace name being validated",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ConfigurationServiceValidateNamespaceBody"
+            }
+          }
+        ],
+        "tags": [
+          "ConfigurationService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ConfigurationServiceValidateNamespaceBody": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1NamespaceConfig",
+          "title": "The namespace configuration to validate"
+        }
+      },
+      "title": "ValidateNamespaceRequest contains a namespace configuration to validate"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1DeleteNamespaceResponse": {
+      "type": "object",
+      "properties": {
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for subsequent operations"
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the namespace was deleted"
+        }
+      },
+      "title": "DeleteNamespaceResponse confirms the delete operation"
+    },
+    "v1ListNamespacesResponse": {
+      "type": "object",
+      "properties": {
+        "configs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NamespaceConfig"
+          },
+          "title": "The namespace configurations"
+        },
+        "nextPageToken": {
+          "type": "string",
+          "title": "Token for next page of results"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token"
+        }
+      },
+      "title": "ListNamespacesResponse contains the list of namespaces"
+    },
+    "v1NamespaceConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The namespace name (e.g., \"documents\", \"folders\")"
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RelationConfig"
+          },
+          "title": "Relations defined for this namespace"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When this namespace was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When this namespace was last updated"
+        }
+      },
+      "title": "NamespaceConfig defines the schema and rules for a namespace"
+    },
+    "v1ReadNamespaceResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1NamespaceConfig",
+          "title": "The namespace configuration"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token"
+        }
+      },
+      "title": "ReadNamespaceResponse contains the namespace configuration"
+    },
+    "v1RelationConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The relation name (e.g., \"viewer\", \"editor\")"
+        },
+        "rewriteRules": {
+          "type": "string",
+          "title": "Userset rewrite rules in JSON format\nDefines how this relation can be computed from other relations"
+        },
+        "description": {
+          "type": "string",
+          "title": "Optional description of this relation"
+        }
+      },
+      "title": "RelationConfig defines a single relation within a namespace"
+    },
+    "v1ValidateNamespaceResponse": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "title": "Whether the configuration is valid"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ValidationError"
+          },
+          "title": "Validation errors if any"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ValidationWarning"
+          },
+          "title": "Validation warnings if any"
+        }
+      },
+      "title": "ValidateNamespaceResponse contains validation results"
+    },
+    "v1ValidationError": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "title": "The field that has an error"
+        },
+        "message": {
+          "type": "string",
+          "title": "The error message"
+        },
+        "code": {
+          "type": "string",
+          "title": "The error code"
+        }
+      },
+      "title": "ValidationError represents a configuration validation error"
+    },
+    "v1ValidationWarning": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "title": "The field that has a warning"
+        },
+        "message": {
+          "type": "string",
+          "title": "The warning message"
+        },
+        "code": {
+          "type": "string",
+          "title": "The warning code"
+        }
+      },
+      "title": "ValidationWarning represents a configuration validation warning"
+    },
+    "v1WriteNamespaceRequest": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1NamespaceConfig",
+          "title": "The namespace configuration to write"
+        },
+        "consistencyToken": {
+          "type": "string",
+          "title": "Optional consistency token"
+        },
+        "allowUpdate": {
+          "type": "boolean",
+          "title": "Whether to allow updates to existing namespaces"
+        }
+      },
+      "title": "WriteNamespaceRequest contains the namespace configuration to write"
+    },
+    "v1WriteNamespaceResponse": {
+      "type": "object",
+      "properties": {
+        "consistencyToken": {
+          "type": "string",
+          "title": "Consistency token for subsequent operations"
+        },
+        "writtenAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "When the namespace was written"
+        },
+        "config": {
+          "$ref": "#/definitions/v1NamespaceConfig",
+          "title": "The written namespace configuration"
+        }
+      },
+      "title": "WriteNamespaceResponse confirms the write operation"
+    }
+  }
+}

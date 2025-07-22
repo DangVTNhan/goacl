@@ -12,6 +12,7 @@ import (
 
 	"github.com/DangVTNhan/goacl/api"
 	"github.com/DangVTNhan/goacl/internal/config"
+	"github.com/DangVTNhan/goacl/internal/database"
 	"github.com/DangVTNhan/goacl/internal/handler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -21,15 +22,17 @@ import (
 // Server manages both gRPC and HTTP servers
 type Server struct {
 	config     *config.Config
+	db         *database.Manager
 	grpcServer *grpc.Server
 	httpServer *http.Server
 	wg         sync.WaitGroup
 }
 
 // New creates a new server instance
-func New(cfg *config.Config) *Server {
+func New(cfg *config.Config, db *database.Manager) *Server {
 	return &Server{
 		config: cfg,
+		db:     db,
 	}
 }
 
@@ -104,7 +107,7 @@ func (s *Server) Stop(ctx context.Context) error {
 
 func (s *Server) setupGRPCServer(pingServer *handler.PingServer) error {
 	s.grpcServer = grpc.NewServer()
-	api.RegisterPingServer(s.grpcServer, pingServer)
+	api.RegisterPingServiceServer(s.grpcServer, pingServer)
 	return nil
 }
 
@@ -140,7 +143,7 @@ func (s *Server) setupHTTPServer(ctx context.Context) error {
 	mux := runtime.NewServeMux()
 
 	// Register the ping service handler
-	if err := api.RegisterPingHandler(ctx, mux, conn); err != nil {
+	if err := api.RegisterPingServiceHandler(ctx, mux, conn); err != nil {
 		err := conn.Close()
 		if err != nil {
 			return err

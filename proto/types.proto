@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package goacl.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/DangVTNhan/goacl/api";
+
+// RelationTuple represents a relationship between a user and an object
+// Following Zanzibar's tuple format: <object>#<relation>@<user>
+message RelationTuple {
+  // The namespace that defines the schema for this tuple
+  string namespace = 1;
+  
+  // The ID of the object in the relationship
+  string object_id = 2;
+  
+  // The relation name (e.g., "viewer", "editor", "owner")
+  string relation = 3;
+  
+  // The user ID in the relationship
+  string user_id = 4;
+  
+  // Optional userset for indirect relationships (e.g., "group:eng#member")
+  string userset = 5;
+  
+  // When this tuple was created
+  google.protobuf.Timestamp created_at = 6;
+  
+  // When this tuple was last updated
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// NamespaceConfig defines the schema and rules for a namespace
+message NamespaceConfig {
+  // The namespace name (e.g., "documents", "folders")
+  string name = 1;
+  
+  // Relations defined for this namespace
+  repeated RelationConfig relations = 2;
+  
+  // When this namespace was created
+  google.protobuf.Timestamp created_at = 3;
+  
+  // When this namespace was last updated
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// RelationConfig defines a single relation within a namespace
+message RelationConfig {
+  // The relation name (e.g., "viewer", "editor")
+  string name = 1;
+  
+  // Userset rewrite rules in JSON format
+  // Defines how this relation can be computed from other relations
+  string rewrite_rules = 2;
+  
+  // Optional description of this relation
+  string description = 3;
+}
+
+// UserSet represents a set of users that can be computed
+message UserSet {
+  oneof userset {
+    // Direct user reference
+    string user_id = 1;
+    
+    // Reference to users with a specific relation to an object
+    ObjectRelation object_relation = 2;
+    
+    // Union of multiple usersets
+    UserSetUnion union = 3;
+    
+    // Intersection of multiple usersets
+    UserSetIntersection intersection = 4;
+    
+    // Exclusion of one userset from another
+    UserSetExclusion exclusion = 5;
+  }
+}
+
+// ObjectRelation represents users with a relation to an object
+message ObjectRelation {
+  // The namespace of the object
+  string namespace = 1;
+  
+  // The object ID
+  string object_id = 2;
+  
+  // The relation name
+  string relation = 3;
+}
+
+// UserSetUnion represents the union of multiple usersets
+message UserSetUnion {
+  repeated UserSet children = 1;
+}
+
+// UserSetIntersection represents the intersection of multiple usersets
+message UserSetIntersection {
+  repeated UserSet children = 1;
+}
+
+// UserSetExclusion represents exclusion of one userset from another
+message UserSetExclusion {
+  UserSet base = 1;
+  UserSet exclude = 2;
+}
+
+// ConsistencyToken represents a point-in-time consistency marker
+// Similar to Zanzibar's "zookie" concept
+message ConsistencyToken {
+  // Opaque token value
+  string token = 1;
+  
+  // Timestamp when this token was issued
+  google.protobuf.Timestamp issued_at = 2;
+}
+
+// Permission represents an action that can be performed
+message Permission {
+  // The namespace this permission applies to
+  string namespace = 1;
+  
+  // The object ID this permission applies to
+  string object_id = 2;
+  
+  // The relation/permission name
+  string relation = 3;
+  
+  // Whether this permission is allowed
+  bool allowed = 4;
+}

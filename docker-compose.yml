@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # Dgraph Zero - Cluster coordinator
   dgraph-zero:
     image: dgraph/dgraph:v24.0.2
     container_name: goacl-dgraph-zero
-    command: dgraph zero --my=dgraph-zero:5080 --replicas=1 --idx=1
+    command: dgraph zero --my=dgraph-zero:5080 --replicas=1
     ports:
       - "5080:5080"
       - "6080:6080"
@@ -120,12 +118,14 @@ services:
     image: redis:8.0-alpine
     container_name: goacl-redis-sentinel
     command: >
-      redis-sentinel /usr/local/etc/redis/sentinel.conf
-      --sentinel
+      sh -c "
+      cp /usr/local/etc/redis/sentinel.conf.template /usr/local/etc/redis/sentinel.conf &&
+      redis-sentinel /usr/local/etc/redis/sentinel.conf --sentinel
+      "
     ports:
       - "26379:26379"
     volumes:
-      - ./config/redis/sentinel.conf:/usr/local/etc/redis/sentinel.conf:ro
+      - ./config/redis/sentinel.conf:/usr/local/etc/redis/sentinel.conf.template:ro
       - redis-sentinel-data:/data
     networks:
       - goacl-network
@@ -145,6 +145,7 @@ services:
   # Dgraph Ratel (Web UI for development)
   dgraph-ratel:
     image: dgraph/ratel:v21.12.0
+    platform: linux/amd64
     container_name: goacl-dgraph-ratel
     ports:
       - "8000:8000"
@@ -160,6 +161,7 @@ services:
   # Redis Commander (Web UI for development)
   redis-commander:
     image: rediscommander/redis-commander:latest
+    platform: linux/amd64
     container_name: goacl-redis-commander
     ports:
       - "8081:8081"
@@ -191,4 +193,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 192.168.100.0/24

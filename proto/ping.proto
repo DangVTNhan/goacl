@@ -1,12 +1,13 @@
 syntax = "proto3";
-package ping;
+
+package goacl.v1;
 
 import "google/api/annotations.proto";
 
 option go_package = "github.com/DangVTNhan/goacl/api";
 
-service Ping {
-  rpc Ping (PingRequest) returns (PingReply) {
+service PingService {
+  rpc Ping (PingRequest) returns (PingResponse) {
     option (google.api.http) = {
       get: "/ping"
     };
@@ -16,6 +17,6 @@ service Ping {
 message PingRequest {
 }
 
-message PingReply {
+message PingResponse {
   string message = 1;
 }
